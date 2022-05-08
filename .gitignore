@@ -1,0 +1,13 @@
+/build/audio
+/build/backends
+/build/base
+/build/common
+/build/engines
+/build/graphics
+/build/gui
+/build/image
+/build/video
+*.o
+lib*.a
+.deps
+*.d
