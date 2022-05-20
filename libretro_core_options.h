@@ -158,6 +158,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "disabled"
 #endif
    },
+   {
+      "scummvm_audio_stutter_reduction",
+      "Audio stutter reduction",
+      "Reduces audio stutter on resource-intensive games, at the cost of a slightly reduced framerate",
+      {
+         { "disabled", NULL },
+         { "enabled",  NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
 

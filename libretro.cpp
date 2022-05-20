@@ -56,6 +56,10 @@ static float mouse_speed = 1.0f;
 static float gamepad_acceleration_time = 0.2f;
 
 static bool speed_hack_is_enabled = false;
+static bool audio_stutter_reduction = false;
+
+static size_t audio_buffer_length = 0;
+static uint32* audio_buffer = NULL;
 
 char cmd_params[20][200];
 char cmd_params_num;
@@ -149,6 +153,11 @@ void retro_init (void)
 
 void retro_deinit(void)
 {
+   if (audio_buffer != NULL)
+   {
+      delete [] audio_buffer;
+      audio_buffer = NULL;
+   }
 }
 
 void parse_command_params(char* cmdline)
@@ -270,6 +279,15 @@ static void update_variables(void)
 	{
 		if (strcmp(var.value, "enabled") == 0)
 			speed_hack_is_enabled = true;
+	}
+
+   var.key = "scummvm_audio_stutter_reduction";
+   var.value = NULL;
+   audio_stutter_reduction = true;
+	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+	{
+		if (strcmp(var.value, "disabled") == 0)
+			audio_stutter_reduction = false;
 	}
 }
 
@@ -477,8 +495,21 @@ void retro_run (void)
       video_cb(screen.pixels, screen.w, screen.h, screen.pitch);
 
       /* Upload audio */
-      static uint32 buf[800];
-      int count = ((Audio::MixerImpl*)g_system->getMixer())->mixCallback((byte*)buf, 800*4);
+      // HACK: Stutter reduction locks the framerate to a max of 50, but stops crackling audio in most games
+      int samples_per_frame = 44100u / (audio_stutter_reduction ? 50u : 60u); 
+
+      if (audio_buffer == NULL || samples_per_frame != audio_buffer_length)
+      {
+         if (audio_buffer != NULL)
+         {
+            delete [] audio_buffer;
+         }
+
+         audio_buffer_length = samples_per_frame;
+         audio_buffer = new uint32[audio_buffer_length];
+      }
+
+      int count = ((Audio::MixerImpl*)g_system->getMixer())->mixCallback((byte*)audio_buffer, audio_buffer_length*4);
 
 #if defined(_3DS)
       /* Hack: 3DS will produce static noise
@@ -493,7 +524,7 @@ void retro_run (void)
       }
       else
 #endif
-         audio_batch_cb((int16_t*)buf, count);
+         audio_batch_cb((int16_t*)audio_buffer, count);
    }
 
 #if defined(USE_LIBCO)
