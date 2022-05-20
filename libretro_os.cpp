@@ -256,6 +256,62 @@ static void blit_uint16_uint16(Graphics::Surface& aOut, const Graphics::Surface&
    }
 }
 
+static void blit_uint24_uint16(Graphics::Surface& aOut, const Graphics::Surface& aIn, int aX, int aY, const RetroPalette& aColors, uint32 aKeyColor)
+{
+   for(int i = 0; i < aIn.h; i ++)
+   {
+      if((i + aY) < 0 || (i + aY) >= aOut.h)
+         continue;
+
+      uint8_t* const in = (uint8_t*)aIn.pixels + (i * 3 * aIn.w);
+      uint16_t* const out = (uint16_t*)aOut.pixels + ((i + aY) * aOut.w);
+
+      for(int j = 0; j < aIn.w; j ++)
+      {
+         if((j + aX) < 0 || (j + aX) >= aOut.w)
+            continue;
+
+         uint8 r, g, b;
+         r = in[j * 3 + 0];
+         g = in[j * 3 + 1];
+         b = in[j * 3 + 2];
+
+         if(r != 0xFF && g != 0x00 && b != 0xFF)
+         {
+            out[j + aX] = aOut.format.RGBToColor(r, g, b);
+         }
+      }
+   }
+}
+
+static void blit_uint32_uint16(Graphics::Surface& aOut, const Graphics::Surface& aIn, int aX, int aY, const RetroPalette& aColors, uint32 aKeyColor)
+{
+   for(int i = 0; i < aIn.h; i ++)
+   {
+      if((i + aY) < 0 || (i + aY) >= aOut.h)
+         continue;
+
+      uint8_t* const in = (uint8_t*)aIn.pixels + (i * 4 * aIn.w);
+      uint16_t* const out = (uint16_t*)aOut.pixels + ((i + aY) * aOut.w);
+
+      for(int j = 0; j < aIn.w; j ++)
+      {
+         if((j + aX) < 0 || (j + aX) >= aOut.w)
+            continue;
+
+         uint8 r, g, b;
+         r = in[j * 4 + 0];
+         g = in[j * 4 + 1];
+         b = in[j * 4 + 2];
+
+         if(r != 0xFF && g != 0x00 && b != 0xFF)
+         {
+            out[j + aX] = aOut.format.RGBToColor(r, g, b);
+         }
+      }
+   }
+}
+
 static INLINE void copyRectToSurface(uint8_t *pixels, int out_pitch, const uint8_t *src, int pitch, int x, int y, int w, int h, int out_bpp)
 {
    uint8_t *dst = pixels + y * out_pitch + x * out_bpp;
@@ -527,8 +583,12 @@ class OSystem_RETRO : public EventsBaseBackend, public PaletteManager {
 
             if(_mouseImage.format.bytesPerPixel == 1)
                blit_uint8_uint16(_screen, _mouseImage, x, y, _mousePaletteEnabled ? _mousePalette : _gamePalette, _mouseKeyColor);
-            else
+            else if (_mouseImage.format.bytesPerPixel == 2)
                blit_uint16_uint16(_screen, _mouseImage, x, y, _mousePaletteEnabled ? _mousePalette : _gamePalette, _mouseKeyColor);
+            else if (_mouseImage.format.bytesPerPixel == 3)
+               blit_uint24_uint16(_screen, _mouseImage, x, y, _mousePaletteEnabled ? _mousePalette : _gamePalette, _mouseKeyColor);
+            else if (_mouseImage.format.bytesPerPixel == 4)
+               blit_uint32_uint16(_screen, _mouseImage, x, y, _mousePaletteEnabled ? _mousePalette : _gamePalette, _mouseKeyColor);
          }
       }
 
