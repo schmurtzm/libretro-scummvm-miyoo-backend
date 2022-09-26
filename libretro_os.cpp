@@ -127,7 +127,7 @@ static INLINE void blit_uint8_uint16_fast(Graphics::Surface& aOut, const Graphic
          uint8 r, g, b;
 
          const uint8_t val = in[j];
-         if(val != 0xFFFFFFFF)
+         //if(val != 0xFFFFFFFF)
          {
             if(aIn.format.bytesPerPixel == 1)
             {
@@ -162,8 +162,8 @@ static INLINE void blit_uint32_uint16(Graphics::Surface& aOut, const Graphics::S
 
          uint8 r, g, b;
 
-         const uint32_t val = in[j];
-         if(val != 0xFFFFFFFF)
+         //const uint32_t val = in[j];
+         //if(val != 0xFFFFFFFF)
          {
             aIn.format.colorToRGB(in[j], r, g, b);
             out[j] = aOut.format.RGBToColor(r, g, b);
@@ -189,8 +189,8 @@ static INLINE void blit_uint16_uint16(Graphics::Surface& aOut, const Graphics::S
 
          uint8 r, g, b;
 
-         const uint16_t val = in[j];
-         if(val != 0xFFFFFFFF)
+         //const uint16_t val = in[j];
+         //if(val != 0xFFFFFFFF)
          {
             aIn.format.colorToRGB(in[j], r, g, b);
             out[j] = aOut.format.RGBToColor(r, g, b);
