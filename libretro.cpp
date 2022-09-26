@@ -56,7 +56,8 @@ static float mouse_speed = 1.0f;
 static float gamepad_acceleration_time = 0.2f;
 
 static bool speed_hack_is_enabled = false;
-static bool audio_stutter_reduction = false;
+//static bool audio_stutter_reduction = false;
+static int target_fps=55;
 
 static size_t audio_buffer_length = 0;
 static uint32* audio_buffer = NULL;
@@ -281,14 +282,23 @@ static void update_variables(void)
 			speed_hack_is_enabled = true;
 	}
 
-   var.key = "scummvm_audio_stutter_reduction";
+ /*  var.key = "scummvm_audio_stutter_reduction";
    var.value = NULL;
    audio_stutter_reduction = true;
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
 	{
 		if (strcmp(var.value, "disabled") == 0)
 			audio_stutter_reduction = false;
-	}
+	}*/
+	
+   var.key = "scummvm_target_fps";
+   var.value = NULL;
+   target_fps = 55u;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   {
+      target_fps = (int)atof(var.value);
+   }
+	
 }
 
 static int retro_device = RETRO_DEVICE_JOYPAD;
@@ -500,7 +510,8 @@ void retro_run (void)
 
       /* Upload audio */
       // HACK: Stutter reduction locks the framerate to a max of 50, but stops crackling audio in most games
-      int samples_per_frame = 44100u / (audio_stutter_reduction ? 50u : 60u); 
+      
+       int samples_per_frame = 44100u / (target_fps); 
 
       if (audio_buffer == NULL || samples_per_frame != audio_buffer_length)
       {
@@ -514,6 +525,12 @@ void retro_run (void)
       }
 
       int count = ((Audio::MixerImpl*)g_system->getMixer())->mixCallback((byte*)audio_buffer, audio_buffer_length*4);
+      
+      
+      
+      
+  /*     uint32 buf[audio_buffer_length];
+      int count = ((Audio::MixerImpl*)g_system->getMixer())->mixCallback((byte*)buf, audio_buffer_length*4);*/
 
 #if defined(_3DS)
       /* Hack: 3DS will produce static noise
