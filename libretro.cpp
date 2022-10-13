@@ -365,6 +365,36 @@ bool retro_load_game(const struct retro_game_info *game)
          fclose(gamefile);
          parse_command_params(buffer);
       }
+      else if (strstr(game->path, ".target") != NULL) {
+
+         FILE * gamefile = fopen(game->path, "r");
+         if (gamefile == NULL)
+         {
+            log_cb(RETRO_LOG_ERROR, "[scummvm] Failed to load given game file.\n");
+            free(path);
+            return false;
+         }
+
+         // Load the file data.
+         char filedata[400];
+         if (fgets(filedata, 400, gamefile) == NULL)
+         {
+            fclose(gamefile);
+            log_cb(RETRO_LOG_ERROR, "[scummvm] Failed to load contents of game file.\n");
+            free(path);
+            return false;
+         }
+
+         // Create a command line parameters using the target name only
+         sprintf(buffer, " %s", filedata);
+         fclose(gamefile);
+         parse_command_params(buffer);
+      }
+      else if (strstr(game->path, ".scan") != NULL) {
+         // Use auto-detect games in subdirectories and add them to ScummVM launcher / scummvm.ini file.
+         sprintf(buffer, "-p \"%s\" -a --recursive", gamedir);
+         parse_command_params(buffer);
+      }
       else {
          // Use auto-detect to launch the game from the given directory.
          sprintf(buffer, "-p \"%s\" --auto-detect", gamedir);
