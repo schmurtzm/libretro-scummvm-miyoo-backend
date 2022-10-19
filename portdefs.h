@@ -31,6 +31,7 @@
 #include <math.h>
 #include <new>
 #include <limits.h>
+#include <stddef.h>
 
 
 /* newlib ctype.h defines _X for hex digit flag.
